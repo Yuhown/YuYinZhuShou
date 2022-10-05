@@ -13,7 +13,7 @@ from download import download
 from play_music import play_music
 from turing_answer import answer
 from play import play
-from recording import recording
+from recording import recording, check_env_voice
 from move_old_version import move
 class Robot():
     def __init__(self,name,per=1,speed=5,pit=5,vol=5,listen_time=5):
@@ -53,8 +53,9 @@ class Robot():
             time.sleep(0.2)
             
     def listening(self):
+        env_voice = check_env_voice()
         while True:
-            recording()
+            recording(env_voice=env_voice)
             with open(self.man_wav, 'rb') as fp:
                 file = fp.read()
             result_text = self.client.asr(file, 'wav',16000, {'dev_pid': '1537',})
@@ -68,7 +69,7 @@ class Robot():
                     else:
                         self.tts('你好啊')#如果语音识别为唤醒词，则更该状态为唤醒状态，并退出此次问答
                         self.sleep =1
-                        continue        
+                        continue
                 if  self.search_flag == 1 or self.download_flag == 1:#判断是否为下载或者搜索模式，
                     if self.search_flag == 1:#如果是搜索模式则直接用网友搜索识别到的关键词
                         my_driver = webdriver.Chrome('/usr/lib/chromium-browser/chromedriver')
@@ -81,8 +82,30 @@ class Robot():
                         play_music()
                         answer_text = "音乐放完了"
                         self.download_flag = 0
+                elif info is None or info == '':
+                    answer_text = "没听清，可以再说一遍吗？"
                 else:
-                    if "诗" in info:#如果不是下载或搜索模式，则进行关键词检测
+                    if info in ['机电了','点了','机电','电缆','电了','现在几点了']:#对时间的处理，‘几点了’的识别结果很无奈
+                        now_time = time.localtime()
+                        tm_hour = now_time.tm_hour
+                        if tm_hour >= 12:
+                            tm_hour -= 12
+                        tm_min = now_time.tm_min
+                        tm_sec = now_time.tm_sec
+                        answer_text = str(tm_hour)+'点'+str(tm_min)+'分'+str(tm_sec)+'秒'
+                    elif '今天几号' in info or '今天多少号' in info:#对日期的处理
+                        now_time = time.localtime()
+                        tm_mon = now_time.tm_mon
+                        tm_mday = now_time.tm_mday
+                        answer_text = str(tm_mon)+'月'+str(tm_mday)+'号'
+                    elif '今天星期几' in info:#对星期的处理
+                        now_time = time.localtime()
+                        tm_wday = now_time.tm_wday+1
+                        if tm_wday <= 6:
+                            answer_text = '星期'+str(tm_wday)
+                        else:
+                            answer_text = '星期日'
+                    elif "诗" in info:#如果不是下载或搜索模式，则进行关键词检测
                         self.tts('床前明月光')
                         self.tts('疑似地上霜')
                         self.tts('举头望明月')

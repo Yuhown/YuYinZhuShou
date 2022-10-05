@@ -133,9 +133,8 @@ class Robot():
                 {
                     "location":
                     {
-                        "city":"shanghai",
-                        "province":"shanghai",
-                        "street":"kangjianlu"
+                        "city":"shenzhen",
+                        "province":"guangdong"
                     }
                 }
             },
@@ -143,7 +142,7 @@ class Robot():
             {
                 "apiKey":"6fff619804884decb5dd732f331d1ab1",
                 #"text": self.questen,
-                "userId":"YiJiaoXinXi"
+                "userId":"szsy"
             }
         }
         #print("gyg01",req)
